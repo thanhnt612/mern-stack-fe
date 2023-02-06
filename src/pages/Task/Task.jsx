@@ -19,164 +19,219 @@ export default function Home() {
   const { task } = useSelector((state) => state.taskReducer);
   const { taskDetail } = useSelector((state) => state.taskReducer);
   const dispatch = useDispatch();
-  const [value, setValue] = useState("");
+  const [post, setPost] = useState({ title: "", description: "" });
+  const [like, setLike] = useState(0);
+
   const handleChange = (e) => {
-    setValue(e.target.value);
+    setPost({ ...post, [e.target.name]: e.target.value });
   };
   const handleSubmit = (e) => {
     e.preventDefault();
-    const newValue = value;
+    const newValue = post;
+    console.log(newValue);
     const action = createTaskApi(newValue);
     dispatch(action);
   };
   const frm = useFormik({
     initialValues: {
       id: taskDetail._id,
-      content: taskDetail.content,
+      title: taskDetail.title,
+      description: taskDetail.description,
     },
     enableReinitialize: true,
     validationSchema: yup.object().shape({
-      content: yup.string().required("Please fill in the form !"),
+      title: yup.string().required("Please fill in the form !"),
+      description: yup.string().required("Please fill in the form !"),
     }),
     onSubmit: (update) => {
-      const action = updateTaskApi(update.id, update.content);
+      console.log(update);
+      const action = updateTaskApi(update.id, update.title, update.description);
       dispatch(action);
     },
   });
+  const increment = (id) => {
+    console.log(id);
+    console.log(taskDetail);
+    // if (id) {
+    //   // setLike(like + 1);
+    //   console.log(1);
+    // } else {
+    //   console.log(2);
+    // }
+  };
   return (
-    <div>
-      <section className="vh-100" style={{ backgroundColor: "#eee" }}>
-        <div className="container py-5 h-100">
-          <div className="row d-flex justify-content-center align-items-center h-100">
-            <div className="col col-lg-9 col-xl-7">
-              <div className="card rounded-3">
-                <div className="card-body p-4">
-                  <h4 className="text-center my-3 pb-3">To Do App</h4>
-                  <form
-                    onSubmit={handleSubmit}
-                    className="row row-cols-lg-auto g-3 justify-content-center align-items-center mb-4 pb-2"
-                  >
-                    <div className="col-12">
-                      <div className="form-outline">
-                        <input
-                          type="text"
-                          id="content"
-                          name="content"
-                          value={value}
-                          className="form-control"
-                          placeholder="Enter a task here"
-                          onChange={handleChange}
-                        />
-                      </div>
-                    </div>
-                    <div className="col-12">
-                      <button type="submit" className="btn btn-success">
-                        Add
-                      </button>
-                    </div>
-                  </form>
-                  <div
-                    className="modal fade"
-                    id="exampleModal"
-                    tabIndex={-1}
-                    aria-labelledby="exampleModalLabel"
-                    aria-hidden="true"
-                    style={{ display: "none" }}
-                  >
-                    <div className="modal-dialog">
-                      <div className="modal-content">
-                        <div className="modal-header">
-                          <h1
-                            className="modal-title fs-5"
-                            id="exampleModalLabel"
-                          >
-                            Edit
-                          </h1>
-                          <button
-                            type="button"
-                            className="btn-close"
-                            data-bs-dismiss="modal"
-                            aria-label="Close"
-                          />
+    <div className="post bg-info bg-opacity-50 py-5">
+      <div className="container">
+        <div className="title text-center bg-light rounded-pill py-1">
+          <h3 className="">Routine</h3>
+        </div>
+        <div className="main pt-3">
+          <div className="row">
+            <div className="content d-flex flex-wrap col-9">
+              {task.map((item, index) => {
+                return (
+                  <div className="col-4 p-2">
+                    <div className="card rounded">
+                      <img
+                        className="rounded-top"
+                        src={`https://picsum.photos/300/200/?random=${index}`}
+                        alt="..."
+                      />
+                      <div className="card-body row">
+                        <div className="left col-6">
+                          <h5 className="fst-italic fw-semibold">
+                            {item.title}
+                          </h5>
+                          <p className="fw-normal">{item.description}</p>
                         </div>
-                        <form onSubmit={frm.handleSubmit}>
-                          <div className="modal-body">
-                            <div className="form-group mb-3">
-                              <input
-                                className="form-control"
-                                name="content"
-                                value={frm.values.content}
-                                onChange={frm.handleChange}
-                                onBlur={frm.handleBlur}
-                              />
-                            </div>
-                          </div>
-                          <div className="modal-footer">
-                            <button
-                              type="button"
-                              className="btn bg-danger text-white "
-                              data-bs-dismiss="modal"
-                            >
-                              Close
-                            </button>
-                            <button
-                              type="submit"
-                              className="btn bg-primary text-white"
-                            >
-                              Update
-                            </button>
-                          </div>
-                        </form>
+                        <div className="right text-end col-6">
+                          <span
+                            style={{
+                              cursor: "pointer",
+                              color: "red",
+                              fontSize: 25,
+                            }}
+                            onClick={() => increment(item._id)}
+                          >
+                            <i class="fa fa-heart"></i> {like}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="row p-2 flex-row">
+                        <div className="edit col-6">
+                          <button
+                            type="submit"
+                            className="btn btn-primary"
+                            data-bs-toggle="modal"
+                            data-bs-target="#exampleModal"
+                            onClick={() => {
+                              dispatch(getTaskDetailApi(item._id));
+                            }}
+                          >
+                            <span>
+                              <i class="fa-regular fa-pen-to-square"></i>
+                            </span>
+                          </button>
+                        </div>
+                        <div className="delete text-end col-6">
+                          <button
+                            type="submit"
+                            className="btn btn-danger"
+                            onClick={() => {
+                              dispatch(deleteTaskApi(item._id));
+                            }}
+                          >
+                            <span>
+                              <i class="fa-solid fa-trash"></i>
+                            </span>
+                          </button>
+                        </div>
                       </div>
                     </div>
                   </div>
-                  <table className="table mb-4 text-center">
-                    <thead>
-                      <tr>
-                        <th>No.</th>
-                        <th>List</th>
-                        <th>Actions</th>
-                      </tr>
-                    </thead>
-                    {task.map((item, index) => {
-                      return (
-                        <tbody>
-                          <tr key={index}>
-                            <td>{index}</td>
-                            <td>{item.content}</td>
-                            <td>
-                              <button
-                                type="submit"
-                                className="btn btn-danger"
-                                onClick={() => {
-                                  dispatch(deleteTaskApi(item._id));
-                                }}
-                              >
-                                Delete
-                              </button>
-                              <button
-                                type="submit"
-                                className="btn btn-primary ms-1"
-                                data-bs-toggle="modal"
-                                data-bs-target="#exampleModal"
-                                onClick={() => {
-                                  dispatch(getTaskDetailApi(item._id));
-                                }}
-                              >
-                                Edit
-                              </button>
-                            </td>
-                          </tr>
-                        </tbody>
-                      );
-                    })}
-                  </table>
+                );
+              })}
+            </div>
+            <div className="create col-3 pt-2">
+              <div className="form-outline bg-light rounded p-3">
+                <div className="create-posting">
+                  <form onSubmit={handleSubmit}>
+                    <input
+                      id="title"
+                      name="title"
+                      className="form-control my-3"
+                      placeholder="Title"
+                      onChange={handleChange}
+                    />
+                    <input
+                      id="description"
+                      name="description"
+                      className="form-control my-3"
+                      placeholder="Description"
+                      onChange={handleChange}
+                    />
+                    <div className="text-center">
+                      <button type="submit" className="btn btn-success">
+                        Create a post
+                      </button>
+                    </div>
+                  </form>
+                </div>
+                <div
+                  className="modal fade"
+                  id="exampleModal"
+                  tabIndex={-1}
+                  aria-labelledby="exampleModalLabel"
+                  aria-hidden="true"
+                  style={{ display: "none" }}
+                >
+                  <div className="modal-dialog">
+                    <div className="modal-content ">
+                      <div className="modal-header ">
+                        <h1
+                          className="modal-title fw-bold fs-5"
+                          id="exampleModalLabel"
+                        >
+                          Edit
+                        </h1>
+                        <button
+                          type="button"
+                          className="btn-close"
+                          data-bs-dismiss="modal"
+                          aria-label="Close"
+                        />
+                      </div>
+                      <form onSubmit={frm.handleSubmit}>
+                        <div className="modal-body">
+                          <div className="form-group mb-3">
+                            <span className="text-primary fw-semibold ">
+                              Title:
+                            </span>
+                            <input
+                              className="form-control mb-4"
+                              id="title"
+                              name="title"
+                              value={frm.values.title}
+                              onChange={frm.handleChange}
+                              onBlur={frm.handleBlur}
+                            />
+                            <span className="text-primary fw-semibold">
+                              Description:
+                            </span>
+                            <input
+                              className="form-control"
+                              id="description"
+                              name="description"
+                              value={frm.values.description}
+                              onChange={frm.handleChange}
+                              onBlur={frm.handleBlur}
+                            />
+                          </div>
+                        </div>
+                        <div className="modal-footer">
+                          <button
+                            type="button"
+                            className="btn bg-danger text-white "
+                            data-bs-dismiss="modal"
+                          >
+                            Close
+                          </button>
+                          <button
+                            type="submit"
+                            className="btn bg-primary text-white"
+                          >
+                            Update
+                          </button>
+                        </div>
+                      </form>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
-      </section>
+      </div>
     </div>
   );
 }

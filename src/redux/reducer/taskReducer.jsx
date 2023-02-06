@@ -25,8 +25,7 @@ export default userReducer.reducer;
 
 export const createTaskApi = (post) => {
   return async (dispatch) => {
-    let result = await http.post("/posts", { content: post });
-    console.log("Post Api: ", result.data.content);
+    let result = await http.post("/posts", post);
     dispatch(getTaskApi());
   };
 };
@@ -53,9 +52,12 @@ export const deleteTaskApi = (id) => {
     dispatch(getTaskApi());
   };
 };
-export const updateTaskApi = (id, content) => {
+export const updateTaskApi = (id, title, description) => {
   return async (dispatch) => {
-    let result = await http.put("/posts/" + id, { content: content });
+    let result = await http.put("/posts/" + id, {
+      title: title,
+      description: description,
+    });
     console.log("Updated task !!!");
     dispatch(getTaskApi());
   };
